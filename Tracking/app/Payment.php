@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Payment extends Model
 {
-    protected $fillable = ['phone','ref_number','shipment_id', 'amount', 'user_id'];
+    protected $fillable = ['phone number','Id_number','shipment_id', 'amount', 'user_id'];
 
     protected static function boot()
     {
