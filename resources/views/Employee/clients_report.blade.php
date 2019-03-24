@@ -30,7 +30,7 @@
                           <th>Email</th>
                           <th>Contact</th>
                           <th>Status</th> 
-                          <th>Member from</th>
+                          <th>Member since</th>
                         </tr>
                       </thead>
 
