@@ -9,7 +9,7 @@ class Employeeoffice extends Model
      /**
 	*fillable fields
 	**/
-    protected $fillable = ['user_id','office_id','office_name','office_city','office_location'];
+    protected $fillable = ['user_id','office_id','office_name','office_town','office_location'];
 
    public function user()
     {
