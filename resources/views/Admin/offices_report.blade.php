@@ -27,7 +27,7 @@
                         <tr>
                           
                           <th>Office Name</th>
-                          <th>City</th>
+                          <th>TOWN</th>
                           <th>Location</th>
                           <th>Address</th> 
                           <th>Contact</th> <th>Contact Person</th> <th>Date</th>
