@@ -76,9 +76,26 @@ class PaymentController extends Controller
         flash('Your payment process has been initialized please pay and hit "confirm payment"')->info();
 
     	return response()->json([
-    	    'success' => false,
-            'data' => $stkResponse
+    	    'success' => true,
         ]);
+    }
+
+    public function confirmPayment(Request $request)
+    {
+        $payment = Payment::find($request->payment_id);
+        if ($payment->status == 'paid') {
+            flash("shipment cons number $payment->ref_number has been paid for")->success();
+            return response()->json([
+                'success' => true,
+                'redirect' => url('Client/requests')
+            ]);
+        } else {
+            $status = str_replace('-', ' ', $payment->status);
+            flash("payment status is $status please re-initialize payment")->warning();
+            return response()->json([
+                'success' => true
+            ]);
+        }
     }
 
     private function getCred()

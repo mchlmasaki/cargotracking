@@ -197,5 +197,6 @@ Route::post('password/reset', 'Auth\PasswordController@postReset');
 
 
 Route::post('payment/initialize', 'PaymentController@initPayment');
+Route::post('payment/confirm', 'PaymentController@confirmPayment');
 Route::post('payment/callback/{method}', 'PaymentController@handleCallback');
 // Route::post('/')

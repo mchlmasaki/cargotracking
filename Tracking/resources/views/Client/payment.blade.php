@@ -99,25 +99,27 @@
             </div>
         </div>
         <!-- /top navigation -->
-
-    @include('flash::message')
     <!-- page content -->
         <div class="right_col" role="main" style="color: black;">
             <div class="">
                 <div class="clearfix">
+                    @include('flash::message')
                     <p>Payment for shipment <strong>Cons #{{ $payment->ref_number }}</strong></p>
                     <p>Status :
                         @if($payment->status == 'payment-pending')
                             <span class="label label-warning">payment pending</span>
                         @endif
                         @if($payment->status == 'paid')
-                            <span class="label label-success">payment pending</span>
+                            <span class="label label-success">paid</span>
                         @endif
                         @if($payment->status == 'initialized')
                             <span class="label label-info">payment initialized</span>
                         @endif
                         @if($payment->status == 'cancelled')
-                            <span class="label label-info">payment cancelled</span>
+                            <span class="label label-danger">payment cancelled</span>
+                        @endif
+                        @if($payment->status == 'timed-out')
+                            <span class="label label-danger">payment timed out</span>
                         @endif
                     </p>
                 </div>
@@ -130,9 +132,9 @@
                 @if($payment->status == 'payment-pending')
                     <button class="btn btn-sm btn-primary" id="payment-btn">initialize payment</button>
                 @else
-                   @if($payment->status == 'initialized')
+                   @if($payment->status == 'initialized' || $payment->status == 'cancelled' || $payment->status == 'timed-out')
                         <button class="btn btn-sm btn-primary" id="payment-btn">re-initialize payment</button>
-                        <button class="btn btn-sm btn-secondary" >confirm payment</button>
+                        <button class="btn btn-sm btn-secondary"  id="confirm-btn">confirm payment</button>
                    @endif
                 @endif
             </div>
@@ -163,6 +165,7 @@
     $('div.alert').not('.alert-important').delay(3000).fadeOut(350);
     $('#payment-btn').click(function(){
         this.disabled = true;
+        this.innerHTML = "loading";
         axios.post("{{ url('payment/initialize') }}", {
             'payment_id' : '{{ $payment->id }}',
             'payment' : 'mpesa',
@@ -171,6 +174,22 @@
             .then(function(response) {
                 if (response.data.success) {
                     window.location.reload(false)
+                }
+            })
+    });
+    $('#confirm-btn').click(function(){
+        this.disabled = true;
+        this.innerHTML = "loading";
+        axios.post("{{ url('payment/confirm') }}", {
+            'payment_id' : '{{ $payment->id }}',
+        })
+            .then(function(response) {
+                if (response.data.success) {
+                    if (response.data.hasOwnProperty('redirect')) {
+                        window.location.href = response.data.redirect;
+                    } else {
+                        window.location.reload(false)
+                    }
                 }
             })
     });
