@@ -104,14 +104,37 @@
     <!-- page content -->
         <div class="right_col" role="main" style="color: black;">
             <div class="">
-                <div class="clearfix"></div>
+                <div class="clearfix">
+                    <p>Payment for shipment <strong>Cons #{{ $payment->ref_number }}</strong></p>
+                    <p>Status :
+                        @if($payment->status == 'payment-pending')
+                            <span class="label label-warning">payment pending</span>
+                        @endif
+                        @if($payment->status == 'paid')
+                            <span class="label label-success">payment pending</span>
+                        @endif
+                        @if($payment->status == 'initialized')
+                            <span class="label label-info">payment initialized</span>
+                        @endif
+                        @if($payment->status == 'cancelled')
+                            <span class="label label-info">payment cancelled</span>
+                        @endif
+                    </p>
+                </div>
                 <table class="table table-bordered table-condensed">
                     <tr>
                         <th>Amount</th>
                         <td align="right">Ksh {{ $payment->amount }}</td>
                     </tr>
                 </table>
-                <button class="btn btn-sm btn-primary" id="payment-btn">Initiate payment</button>
+                @if($payment->status == 'payment-pending')
+                    <button class="btn btn-sm btn-primary" id="payment-btn">initialize payment</button>
+                @else
+                   @if($payment->status == 'initialized')
+                        <button class="btn btn-sm btn-primary" id="payment-btn">re-initialize payment</button>
+                        <button class="btn btn-sm btn-secondary" >confirm payment</button>
+                   @endif
+                @endif
             </div>
         </div>
 
@@ -146,9 +169,13 @@
             'phone' : '{{ $payment->phone }}'
         })
             .then(function(response) {
-                console.log(response);
+                if (response.data.success) {
+                    window.location.reload(false)
+                }
             })
     });
 </script>
+    </div>
+</div>
 </body>
 </html>

@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Payment;
+use App\User;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
-    private function initSTK($phone)
+    private function initSTK(Payment $payment)
     {
         $urlNew = 'https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
 
@@ -32,11 +35,11 @@ class PaymentController extends Controller
             'Timestamp' => $time,
             'TransactionType' => 'CustomerPayBillOnline',
             'Amount' => 1,
-            'PartyA' => $phone,
+            'PartyA' => $payment->phone,
             'PartyB' => $short_code,
-            'PhoneNumber' => $phone,
+            'PhoneNumber' => $payment->phone,
             'CallBackURL' => config('mpesa.callback_url'),
-            'AccountReference' => '123',
+            'AccountReference' => $payment->ref_number,
             'TransactionDesc' => 'Nothing here'
         );
 
@@ -48,23 +51,37 @@ class PaymentController extends Controller
 
         $curl_response = curl_exec($curl);
 
-        return $curl_response;
+        return json_decode($curl_response);
     }
 
-     private function getPassword($shortCode, $passkey, $time)
+    private function getPassword($shortCode, $passkey, $time)
     {
         return base64_encode($shortCode . $passkey . $time);
     }
 
-
     public function initPayment(Request $request)
     {
+        $payment = Payment::find($request->payment_id);
+        $payment->status = 'initialized';
+        $payment->save();
+        $stkResponse = null;
     	if ($request->payment == 'mpesa' ) {
-    		$this->initSTK($request->phone);
+    		$stkResponse = $this->initSTK($payment);
+    		if ($stkResponse->ResponseCode == '0') {
+    		    $payment->mpesa_merchant_request_id = $stkResponse->MerchantRequestID;
+    		    $payment->save();
+            }
     	}
+
+        flash('Your payment process has been initialized please pay and hit "confirm payment"')->info();
+
+    	return response()->json([
+    	    'success' => false,
+            'data' => $stkResponse
+        ]);
     }
 
-     private function getCred()
+    private function getCred()
     {
         $url = 'https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials';
 
@@ -93,5 +110,31 @@ class PaymentController extends Controller
         curl_close($curl);
       
         return $access_token = json_decode($body)->access_token;
+    }
+
+    public function handleCallback($payment_method)
+    {
+        $this->handleMpesaSTKCallback();
+    }
+
+    private function handleMpesaSTKCallback()
+    {
+        $postData = file_get_contents('php://input');
+
+        $data = json_decode($postData, false);
+
+        \Log::info($postData);
+
+        $payment = Payment::where('mpesa_merchant_request_id', $data->Body->stkCallback->MerchantRequestID)->first();
+
+        if ($data->Body->stkCallback->ResultCode == 0) {
+            $payment->status = 'paid';
+        } elseif($data->Body->stkCallback->ResultCode == 1001) {
+            $payment->status = 'timed-out';
+        } elseif ($data->Body->stkCallback->ResultCode == 1032) {
+            $payment->status = 'cancelled';
+        }
+
+        $payment->save();
     }
 }

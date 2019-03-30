@@ -17,6 +17,7 @@ class CreatePaymentsTable extends Migration
             $table->unsignedInteger('shipment_id')->index();
             $table->unsignedInteger('user_id')->index();
             $table->text('ref_number');
+            $table->text('mpesa_merchant_request_id')->nullable();
             $table->string('phone');
             $table->string('amount');
             $table->string('status')->default('payment-pending');

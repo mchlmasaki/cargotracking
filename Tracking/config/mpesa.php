@@ -32,7 +32,7 @@ return [
      * stk callback url that will be called by safaricom
      */
 
-    'callback_url' => 'https://rupamall.co.ke/api/callback/mpesa',
+    'callback_url' => 'http://f8cd4da9.ngrok.io/payment/callback/mpesa',
 
     /*
      * validation url this url will be used by safaricom to validate transaction
