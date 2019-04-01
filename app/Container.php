@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Container extends Model
 {
     /**
-    *fillable fields
+    *fillable fields are available
     **/
     protected $fillable = ['name','container_number','max_weight','status','user_id'];
 
